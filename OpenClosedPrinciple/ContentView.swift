@@ -7,21 +7,42 @@
 
 import SwiftUI
 
+struct ClockModel {
+    var hours = "00"
+    var minutes = "00"
+    var seconds = "00"
+    
+    mutating func update() {
+        let date = Date()
+        let calendar = Calendar.current
+        
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        let second = calendar.component(.second, from: date)
+
+        self.hours = String(format: "%02d", hour)
+        self.minutes = String(format: "%02d", minute)
+        self.seconds = String(format: "%02d", second)
+    }
+}
+
 struct ClockView: View {
-    let hours = "00"
-    let minutes = "00"
-    let seconds = "00"
+    @State private var vm = ClockModel()
+    let timer = Timer.TimerPublisher(interval: 1, runLoop: .main, mode: .common).autoconnect()
 
     var body: some View {
         HStack {
-            Text(hours)
+            Text(vm.hours)
             Text(":")
-            Text(minutes)
+            Text(vm.minutes)
             Text(":")
-            Text(seconds)
+            Text(vm.seconds)
         }
         .font(.largeTitle)
         .monospacedDigit()
+        .onReceive(timer) { _ in
+            vm.update()
+        }
     }
 }
 
