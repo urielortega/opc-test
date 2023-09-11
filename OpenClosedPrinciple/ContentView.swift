@@ -27,7 +27,7 @@ struct ClockModel {
 }
 
 struct ClockView: View {
-    @State private var vm = ClockModel()
+    @State var vm: ClockModel
     let timer = Timer.TimerPublisher(interval: 1, runLoop: .main, mode: .common).autoconnect()
 
     var body: some View {
@@ -49,7 +49,8 @@ struct ClockView: View {
 struct ContentView: View {
     var body: some View {
         VStack {
-            ClockView()
+            // Injecting the model 👇
+            ClockView(vm: ClockModel())
         }
         .padding()
     }
