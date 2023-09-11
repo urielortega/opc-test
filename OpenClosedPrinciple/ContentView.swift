@@ -7,7 +7,15 @@
 
 import SwiftUI
 
-struct ClockModel {
+protocol ClockModelProtocol {
+    var hours: String { set get }
+    var minutes: String { set get }
+    var seconds: String { set get }
+    
+    mutating func update()
+}
+
+struct ClockModel: ClockModelProtocol {
     var hours = "00"
     var minutes = "00"
     var seconds = "00"
@@ -27,7 +35,7 @@ struct ClockModel {
 }
 
 struct ClockView: View {
-    @State var vm: ClockModel
+    @State var vm: ClockModelProtocol
     let timer = Timer.TimerPublisher(interval: 1, runLoop: .main, mode: .common).autoconnect()
 
     var body: some View {
