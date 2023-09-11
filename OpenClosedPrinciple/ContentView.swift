@@ -34,6 +34,20 @@ struct ClockModel: ClockModelProtocol {
     }
 }
 
+// Struct for testing purposes.
+struct ClockModelTwo: ClockModelProtocol {
+    var hours = "00"
+    var minutes = "00"
+    var seconds = "00"
+    
+    mutating func update() {
+        hours = "11"
+        minutes = "22"
+        seconds = "33"
+    }
+}
+
+// Now we can modify behavior without changing the code (OCP) by using dependency injection.
 struct ClockView: View {
     @State var vm: ClockModelProtocol
     let timer = Timer.TimerPublisher(interval: 1, runLoop: .main, mode: .common).autoconnect()
@@ -58,7 +72,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             // Injecting the model 👇
-            ClockView(vm: ClockModel())
+            ClockView(vm: ClockModelTwo())
         }
         .padding()
     }
