@@ -6,24 +6,27 @@
 //
 
 import SwiftUI
+import Combine
 
-protocol ClockModelProtocol {
-    var hours: String { set get }
-    var minutes: String { set get }
-    var seconds: String { set get }
+class ClockViewModel: ObservableObject {
+    @Published var hours = "00"
+    @Published var minutes = "00"
+    @Published var seconds = "00"
     
-    mutating func update()
-}
-
-struct ClockModel: ClockModelProtocol {
-    var hours = "00"
-    var minutes = "00"
-    var seconds = "00"
+    private var cancellables = Set<AnyCancellable>()
     
-    mutating func update() {
+    init() {
+        Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+            .sink { _ in
+                self.update()
+            }
+            .store(in: &cancellables)
+    }
+    
+    func update() {
         let date = Date()
         let calendar = Calendar.current
-        
+
         let hour = calendar.component(.hour, from: date)
         let minute = calendar.component(.minute, from: date)
         let second = calendar.component(.second, from: date)
@@ -34,50 +37,35 @@ struct ClockModel: ClockModelProtocol {
     }
 }
 
-// Struct for testing purposes.
-struct ClockModelTwo: ClockModelProtocol {
-    var hours = "00"
-    var minutes = "00"
-    var seconds = "00"
-    
-    mutating func update() {
-        hours = "11"
-        minutes = "22"
-        seconds = "33"
-    }
-}
-
-// Now we can modify behavior without changing the code (OCP) by using dependency injection.
-struct ClockView: View {
-    @State var vm: ClockModelProtocol
-    let timer = Timer.TimerPublisher(interval: 1, runLoop: .main, mode: .common).autoconnect()
-
-    var body: some View {
-        HStack {
-            Text(vm.hours)
-            Text(":")
-            Text(vm.minutes)
-            Text(":")
-            Text(vm.seconds)
-        }
-        .font(.largeTitle)
-        .monospacedDigit()
-        .onReceive(timer) { _ in
-            vm.update()
-        }
-    }
-}
-
 struct ContentView: View {
+    // 1. Creating shared viewModel with @StateObject.
+    @StateObject var viewModel = ClockViewModel()
+    
     var body: some View {
         VStack {
             // Injecting the model 👇
-            ClockView(vm: ClockModelTwo())
+            ClockView(viewModel: viewModel)
         }
         .padding()
     }
 }
 
+struct ClockView: View {
+    // 2. Using the viewModel in a different view with @ObservedObject.
+    @ObservedObject var viewModel: ClockViewModel
+
+    var body: some View {
+        HStack {
+            Text(viewModel.hours)
+            Text(":")
+            Text(viewModel.minutes)
+            Text(":")
+            Text(viewModel.seconds)
+        }
+        .font(.largeTitle)
+        .monospacedDigit()
+    }
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
